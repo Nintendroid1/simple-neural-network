@@ -51,7 +51,7 @@ class NeuralNetwork():
 
 
 #Assigns values found in row (csv data) to 1 and 0 in base array
-def assignValues(base, row):
+def assignValues(row):
     status = str(row[0])
     age = int(row[6])
     race = str(row[9])
@@ -74,7 +74,7 @@ def assignValues(base, row):
     if(sex == 'MALE'):
         addInput[3] = 1
 
-    base.append(addInput)
+    training_set_inputs.append(addInput)
     training_set_outputs.append(addOutput)
 
 #Parses the csv data
@@ -91,7 +91,7 @@ def parseData(file_name):
                 print(str(row[6]) + "\t" + str(row[9]) + "\t" + str(row[10]) + "\t" + str(row[11]))
                 line_count += 1
             else:
-                assignValues(training_set_inputs, row)
+                assignValues(row)
                 line_count += 1
         # return base
 
@@ -126,7 +126,7 @@ if __name__ == "__main__":
         global training_set_outputs
         training_set_inputs = []
         training_set_outputs = []
-        
+
         # Read csv file
         # training_set_inputs = parseData(sys.argv[1])
         parseData(sys.argv[1])
