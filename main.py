@@ -1,4 +1,4 @@
-from numpy import exp, array, random, dot
+from numpy import exp, array, random, dot, hstack, empty
 import sys, csv
 
 #Source code: https://github.com/miloharper/simple-neural-network
@@ -49,11 +49,35 @@ class NeuralNetwork():
         # Pass inputs through our neural network (our single neuron).
         return self.__sigmoid(dot(inputs, self.synaptic_weights))
 
+
+#Assigns values found in row (csv data) to 1 and 0 in base array
+def assignValues(base, row):
+    age = int(row[6])
+    race = str(row[9])
+    ethnicity = str(row[10])
+    sex = str(row[11])
+    
+    print(str(age) + "\t" + str(race) + "\t\t" + str(ethnicity) + "\t\t" + str(sex))
+    addition = [0,0,0,0]
+
+    #TODO Change inductive biases
+    if(age > 30):
+        addition[0] = 1
+    if(race == 'BLACK'):
+        addition[1] = 1
+    if("NOT" not in ethnicity):
+        addition[2] = 1
+    if(sex == 'MALE'):
+        addition[3] = 1
+
+    base.append(addition)
+
 #Parses the csv data
 def parseData(file_name):
     with open(file_name) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
+        base = []
         for row in csv_reader:
             if line_count == 0:
                 #Prints all column names
@@ -62,8 +86,10 @@ def parseData(file_name):
                 print(str(row[6]) + "\t" + str(row[9]) + "\t" + str(row[10]) + "\t" + str(row[11]))
                 line_count += 1
             else:
-                print(str(row[6]) + "\t" + str(row[9]) + "\t\t" + str(row[10]) + "\t\t" + str(row[11]))
+                assignValues(base, row)
                 line_count += 1
+        return base
+
 if __name__ == "__main__":
     if(len(sys.argv) == 2):
         #Intialise a single neuron neural network.
@@ -89,6 +115,7 @@ if __name__ == "__main__":
         print(neural_network.think(array([1, 0, 0])))
 
         # Read csv file
-        parseData(sys.argv[1])
+        test_input = parseData(sys.argv[1])
+        print(test_input)
     else:
         print("Please input file name for training data for neural network") 
