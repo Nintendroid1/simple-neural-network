@@ -1,4 +1,4 @@
-from numpy import exp, array, random, dot, hstack, empty
+from numpy import exp, array, random, dot, hstack, empty, asarray
 import sys, csv
 
 #Source code: https://github.com/miloharper/simple-neural-network
@@ -8,10 +8,10 @@ class NeuralNetwork():
         # every time the program runs.
         random.seed(1)
 
-        # We model a single neuron, with 3 input connections and 1 output connection.
-        # We assign random weights to a 3 x 1 matrix, with values in the range -1 to 1
+        # We model a single neuron, with 4 input connections and 1 output connection.
+        # We assign random weights to a 4 x 1 matrix, with values in the range -1 to 1
         # and mean 0.
-        self.synaptic_weights = 2 * random.random((3, 1)) - 1
+        self.synaptic_weights = 2 * random.random((4, 1)) - 1
 
     # The Sigmoid function, which describes an S shaped curve.
     # We pass the weighted sum of the inputs through this function to
@@ -52,32 +52,37 @@ class NeuralNetwork():
 
 #Assigns values found in row (csv data) to 1 and 0 in base array
 def assignValues(base, row):
+    status = str(row[0])
     age = int(row[6])
     race = str(row[9])
     ethnicity = str(row[10])
     sex = str(row[11])
     
     print(str(age) + "\t" + str(race) + "\t\t" + str(ethnicity) + "\t\t" + str(sex))
-    addition = [0,0,0,0]
+    addInput = [0,0,0,0]
+    addOutput = [0]
 
+    if("Arrest" in status):
+        addOutput[0] = 1
     #TODO Change inductive biases
     if(age > 30):
-        addition[0] = 1
+        addInput[0] = 1
     if(race == 'BLACK'):
-        addition[1] = 1
+        addInput[1] = 1
     if("NOT" not in ethnicity):
-        addition[2] = 1
+        addInput[2] = 1
     if(sex == 'MALE'):
-        addition[3] = 1
+        addInput[3] = 1
 
-    base.append(addition)
+    base.append(addInput)
+    training_set_outputs.append(addOutput)
 
 #Parses the csv data
 def parseData(file_name):
     with open(file_name) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
-        base = []
+        # base = []
         for row in csv_reader:
             if line_count == 0:
                 #Prints all column names
@@ -86,9 +91,28 @@ def parseData(file_name):
                 print(str(row[6]) + "\t" + str(row[9]) + "\t" + str(row[10]) + "\t" + str(row[11]))
                 line_count += 1
             else:
-                assignValues(base, row)
+                assignValues(training_set_inputs, row)
                 line_count += 1
-        return base
+        # return base
+
+#Tests the neural network based on user-specified input
+#TODO Change to file specified
+def testNetwork(neural_network):
+    # Test the neural network with new situations
+    print("Considering new situation Young Black Male: [0, 1, 0, 1] -> ?: ")
+    print(neural_network.think(array([0, 1, 0, 1])))
+
+    print("Considering new situation Old White Male: [1, 0, 0, 1] -> ?: ")
+    print(neural_network.think(array([1, 0, 0, 1])))
+
+    print("Considering new situation Young Black Female: [0, 1, 0, 0] -> ?: ")
+    print(neural_network.think(array([0, 1, 0, 0])))
+
+    print("Considering new situation Young Hispanic Female: [0, 0, 1, 0] -> ?: ")
+    print(neural_network.think(array([0, 0, 1, 0])))
+
+    print("Considering new situation Old White Female: [1, 0, 1, 0] -> ?: ")
+    print(neural_network.think(array([1, 0, 0, 0])))
 
 if __name__ == "__main__":
     if(len(sys.argv) == 2):
@@ -98,10 +122,18 @@ if __name__ == "__main__":
         print("Random starting synaptic weights: ")
         print(neural_network.synaptic_weights)
 
-        # The training set. We have 4 examples, each consisting of 3 input values
-        # and 1 output value.
-        training_set_inputs = array([[0, 0, 1], [1, 1, 1], [1, 0, 1], [0, 1, 1]])
-        training_set_outputs = array([[0, 1, 1, 0]]).T
+        global training_set_inputs
+        global training_set_outputs
+        training_set_inputs = []
+        training_set_outputs = []
+        
+        # Read csv file
+        # training_set_inputs = parseData(sys.argv[1])
+        parseData(sys.argv[1])
+        training_set_inputs = asarray(training_set_inputs)
+        training_set_outputs = asarray(training_set_outputs)
+        print(training_set_inputs)
+        print(training_set_outputs)
 
         # Train the neural network using a training set.
         # Do it 10,000 times and make small adjustments each time.
@@ -110,12 +142,6 @@ if __name__ == "__main__":
         print("New synaptic weights after training: ")
         print(neural_network.synaptic_weights)
 
-        # Test the neural network with a new situation.
-        print("Considering new situation [1, 0, 0] -> ?: ")
-        print(neural_network.think(array([1, 0, 0])))
-
-        # Read csv file
-        test_input = parseData(sys.argv[1])
-        print(test_input)
+        testNetwork(neural_network)
     else:
         print("Please input file name for training data for neural network") 
